@@ -6,7 +6,10 @@ A small, thread-safe in-memory key-value cache with per-entry expiration and Go 
 - Safe for concurrent use (uses `sync.RWMutex`)
 - Per-entry expiration based on a common `expiryDur`
 - Simple API: `NewSimpleCache`, `Set`, `Get`
-- No background eviction: expired entries are detected and deleted when calling `Get`
+
+### Limitations
+- No eviction policy beyond expiration
+- Not persistent; data is lost on program exit
 
 ### Usage
 
