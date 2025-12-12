@@ -7,9 +7,11 @@ import (
 )
 
 func TestSimpleCache_SetAndGet(t *testing.T) {
+	// Create a cache with a cleanup interval of 1 second
 	sut := NewSimpleCache[string](1 * time.Second)
 
-	sut.Set("key1", "value1")
+	// Set and Get a value
+	sut.Set("key1", 2*time.Second, "value1")
 	val, found := sut.Get("key1")
 	if !found || val != "value1" {
 		t.Errorf("Expected to find key1 with value 'value1', got '%s', found: %v", val, found)
@@ -22,9 +24,9 @@ func TestSimpleCache_SetAndGet(t *testing.T) {
 }
 
 func TestSimpleCache_DurationSetToZeroWillNotCache(t *testing.T) {
-	sut := NewSimpleCache[string](0)
+	sut := NewSimpleCache[string](time.Millisecond)
 
-	sut.Set("key1", "value1")
+	sut.Set("key1", 0, "value1")
 	val, found := sut.Get("key1")
 	if found {
 		t.Errorf("Expected not to find key1, but got value '%s'", val)
@@ -32,9 +34,9 @@ func TestSimpleCache_DurationSetToZeroWillNotCache(t *testing.T) {
 }
 
 func TestSimpleCache_Expiration(t *testing.T) {
-	sut := NewSimpleCache[string](10 * time.Millisecond)
+	sut := NewSimpleCache[string](1 * time.Millisecond)
 
-	sut.Set("key1", "value1")
+	sut.Set("key1", time.Millisecond*5, "value1")
 	val, found := sut.Get("key1")
 	if !found || val != "value1" {
 		t.Errorf("Expected to find key1 with value 'value1', got '%s', found: %v", val, found)
@@ -59,7 +61,7 @@ func TestSimpleCache_ConcurrentAccess(t *testing.T) {
 		go func(id int) {
 			defer wg.Done()
 			for j := 0; j < numIterations; j++ {
-				sut.Set("key", id*j)
+				sut.Set("key", time.Minute, id*j)
 			}
 		}(i)
 	}
@@ -85,7 +87,7 @@ func TestSimpleCache_DifferentTypes(t *testing.T) {
 			name: "string cache",
 			run: func(t *testing.T) {
 				c := NewSimpleCache[string](1 * time.Minute)
-				c.Set("strKey", "stringValue")
+				c.Set("strKey", 1*time.Minute, "stringValue")
 				v, ok := c.Get("strKey")
 				if !ok || v != "stringValue" {
 					t.Errorf("Expected to find strKey with value 'stringValue', got '%s', found: %v", v, ok)
@@ -96,7 +98,7 @@ func TestSimpleCache_DifferentTypes(t *testing.T) {
 			name: "int cache",
 			run: func(t *testing.T) {
 				c := NewSimpleCache[int](1 * time.Minute)
-				c.Set("intKey", 42)
+				c.Set("intKey", 1*time.Minute, 42)
 				v, ok := c.Get("intKey")
 				if !ok || v != 42 {
 					t.Errorf("Expected to find intKey with value 42, got '%d', found: %v", v, ok)
@@ -112,7 +114,7 @@ func TestSimpleCache_DifferentTypes(t *testing.T) {
 				}
 				c := NewSimpleCache[testStruct](1 * time.Minute)
 				expected := testStruct{Field1: "test", Field2: 100}
-				c.Set("structKey", expected)
+				c.Set("structKey", 1*time.Minute, expected)
 				v, ok := c.Get("structKey")
 				if !ok || v != expected {
 					t.Errorf("Expected to find structKey with value %+v, got %+v, found: %v", expected, v, ok)
