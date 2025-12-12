@@ -24,13 +24,12 @@ import (
 )
 
 func main() {
-	
 	var (
-		cleanupInterval time.Duration = time.Minute * 5
-		greetingTTL   time.Duration = time.Minute * 10
+		cleanupInterval = time.Minute * 5
+		greetingTTL = time.Minute * 10
 	)
 	// Create a cache that cleans up expired entries every 5 minutes
-	cache := keyvalstore.NewSimpleCache[string](5 * time.Minute)
+	cache := keyvalstore.NewSimpleCache[string](cleanupInterval)
 
 	// Store a value with a TTL
 	cache.Set("greeting", greetingTTL, "hello")
